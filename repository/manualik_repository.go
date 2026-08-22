@@ -1,0 +1,24 @@
+package repository
+
+import (
+	"context"
+	"database/sql"
+	"ekak_kab_sleman/model/domain"
+)
+
+type ManualIKRepository interface {
+	Create(ctx context.Context, tx *sql.Tx, manualik domain.ManualIK) (domain.ManualIK, error)
+	Update(ctx context.Context, tx *sql.Tx, manualik domain.ManualIK) (domain.ManualIK, error)
+	// Delete(ctx context.Context, tx *sql.Tx, manualikId int) error
+	// FindBy(ctx context.Context, tx *sql.Tx, manualikId int) ([]domain.ManualIK, error)
+	// FindManualIKByIndikatorId(ctx context.Context, tx *sql.Tx, indikatorId string) ([]domain.ManualIK, error)
+	GetManualIK(ctx context.Context, tx *sql.Tx, indikatorId string) ([]domain.ManualIK, error)
+	GetRencanaKinerjaWithTarget(ctx context.Context, tx *sql.Tx, indikatorId string) (domain.Indikator, domain.RencanaKinerja, []domain.Target, domain.PohonKinerja, error)
+	FindByIndikatorId(ctx context.Context, tx *sql.Tx, indikatorId string) (domain.ManualIK, error)
+	FindManualIKSasaranOpdByIndikatorId(ctx context.Context, tx *sql.Tx, indikatorId string, tahun string) (domain.ManualIK, error)
+	DeleteByIndikatorId(ctx context.Context, tx *sql.Tx, indikatorId string) error
+	IsIndikatorExist(ctx context.Context, tx *sql.Tx, indikatorId string) (bool, error)
+	CloneManualIK(ctx context.Context, tx *sql.Tx, indikatorIdLama string, indikatorIdBaru string) error
+	FindByIndikatorIds(ctx context.Context, tx *sql.Tx, indikatorIds []string) ([]domain.ManualIK, error)
+	CreateBatch(ctx context.Context, tx *sql.Tx, manualIks []domain.ManualIK) error
+}

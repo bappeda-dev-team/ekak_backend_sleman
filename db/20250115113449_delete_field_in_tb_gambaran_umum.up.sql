@@ -1,0 +1,1 @@
+ALTER TABLE tb_gambaran_umum DROP COLUMN pegawai_id;

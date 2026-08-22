@@ -1,0 +1,1 @@
+ALTER TABLE tb_bidang_urusan ADD COLUMN tahun VARCHAR(255) DEFAULT '';

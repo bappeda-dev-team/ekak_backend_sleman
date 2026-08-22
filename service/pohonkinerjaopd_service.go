@@ -1,0 +1,33 @@
+package service
+
+import (
+	"context"
+	"ekak_kab_sleman/model/web/pohonkinerja"
+	"ekak_kab_sleman/model/web/strategic"
+)
+
+type PohonKinerjaOpdService interface {
+	Create(ctx context.Context, request pohonkinerja.PohonKinerjaCreateRequest) (pohonkinerja.PohonKinerjaOpdResponse, error)
+	Update(ctx context.Context, request pohonkinerja.PohonKinerjaUpdateRequest) (pohonkinerja.PohonKinerjaOpdResponse, error)
+	Delete(ctx context.Context, id int) error
+	FindById(ctx context.Context, id int) (pohonkinerja.PohonKinerjaOpdResponse, error)
+	FindAll(ctx context.Context, kodeOpd, tahun string) (pohonkinerja.PohonKinerjaOpdAllResponse, error)
+	FindAllArah(ctx context.Context, kodeOpd, tahun string) (strategic.StrategicArahKebijakanOpdAllResponse, error)
+	// FindAllArahPemda(ctx context.Context, kodeOpd, tahun string) (strategicarahkebijakan.StrategicArahKebijakanPemdaAllResponse, error)
+	FindStrategicNoParent(ctx context.Context, kodeOpd, tahun string) ([]pohonkinerja.StrategicOpdResponse, error)
+	DeletePelaksana(ctx context.Context, pelaksanaId string) error
+	FindPokinByPelaksana(ctx context.Context, pegawaiId string, tahun string) ([]pohonkinerja.PohonKinerjaOpdResponse, error)
+	DeletePokinPemdaInOpd(ctx context.Context, id int) error
+	UpdateParent(ctx context.Context, pohonKinerja pohonkinerja.PohonKinerjaUpdateParentRequest) (pohonkinerja.PohonKinerjaOpdResponse, error)
+	FindidPokinWithAllTema(ctx context.Context, id int) (pohonkinerja.PohonKinerjaAdminResponse, error)
+	CloneByKodeOpdAndTahun(ctx context.Context, request pohonkinerja.PohonKinerjaCloneRequest) error
+	CheckPokinExistsByTahun(ctx context.Context, kodeOpd string, tahun string) (bool, error)
+	FindAllPokinParentClonePokinOpd(ctx context.Context, kodeOpd, tahun string, levelPohon *int) ([]pohonkinerja.PohonKinerjaOpdResponse, error)
+	CountPokinPemda(ctx context.Context, kodeOpd, tahun string) (pohonkinerja.CountPokinPemdaResponse, error)
+	FindPokinAtasan(ctx context.Context, id int) (pohonkinerja.PokinAtasanResponse, error)
+	ControlPokinOpd(ctx context.Context, kodeOpd, tahun string) (pohonkinerja.ControlPokinOpdResponse, error)
+	LeaderboardPokinOpd(ctx context.Context, tahun string) ([]pohonkinerja.LeaderboardPokinResponse, error)
+	UpdateParentClone(ctx context.Context, req pohonkinerja.PohonKinerjaUpdateParentRequest) (pohonkinerja.PohonKinerjaUpdateParentCloneResponse, error)
+	UpsertLeaderboardHidden(ctx context.Context, req pohonkinerja.LeaderboardHiddenUpsertRequest) error
+	FindLeaderboardHiddenKodeOpds(ctx context.Context, tahun string) ([]string, error)
+}

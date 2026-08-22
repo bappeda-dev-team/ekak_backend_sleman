@@ -1,0 +1,7 @@
+CREATE TABLE tb_indikator_sub_kegiatan (
+    id VARCHAR(225) NOT NULL,
+    subkegiatan_id VARCHAR(225),
+    indikator TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)ENGINE = InnoDB;

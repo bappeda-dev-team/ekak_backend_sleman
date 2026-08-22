@@ -1,0 +1,1 @@
+ALTER TABLE tb_periode ADD COLUMN jenis_periode VARCHAR(255) NOT NULL;

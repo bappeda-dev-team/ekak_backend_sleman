@@ -1,0 +1,1 @@
+ALTER TABLE tb_pohon_kinerja ADD COLUMN status VARCHAR(255) NOT NULL;

@@ -1,0 +1,5 @@
+ALTER TABLE tb_pohon_kinerja ADD COLUMN clone_from INT DEFAULT 0;
+
+ALTER TABLE tb_indikator ADD COLUMN clone_from VARCHAR(255) NOT NULL DEFAULT '';
+
+ALTER TABLE tb_target ADD COLUMN clone_from VARCHAR(255) NOT NULL DEFAULT '';

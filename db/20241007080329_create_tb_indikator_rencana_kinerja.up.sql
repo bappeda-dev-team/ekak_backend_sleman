@@ -1,0 +1,8 @@
+CREATE TABLE tb_indikator (
+    id VARCHAR(255) UNIQUE,
+    rencana_kinerja_id VARCHAR(255),
+    indikator VARCHAR(255),
+    tahun VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)ENGINE=InnoDB;

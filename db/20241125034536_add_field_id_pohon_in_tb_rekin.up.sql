@@ -1,0 +1,1 @@
+ALTER TABLE tb_rencana_kinerja ADD COLUMN id_pohon INT NOT NULL;

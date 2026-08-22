@@ -1,0 +1,1 @@
+ALTER TABLE tb_pegawai ADD COLUMN kode_opd VARCHAR(255) NOT NULL;

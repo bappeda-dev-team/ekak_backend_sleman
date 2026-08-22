@@ -1,0 +1,1 @@
+ALTER TABLE tb_indikator ADD COLUMN kegiatan_id VARCHAR(255);

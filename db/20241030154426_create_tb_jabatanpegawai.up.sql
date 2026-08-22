@@ -1,0 +1,13 @@
+CREATE TABLE tb_jabatan_pegawai (
+    id VARCHAR(36) NOT NULL,
+    id_jabatan VARCHAR(36) NOT NULL,
+    id_pegawai VARCHAR(36) NOT NULL,
+    status VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    bulan VARCHAR(255) NOT NULL,
+    tahun VARCHAR(255) NOT NULL,
+    pangkat VARCHAR(255),
+    golongan VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB;

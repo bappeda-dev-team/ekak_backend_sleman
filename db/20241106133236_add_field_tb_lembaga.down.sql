@@ -1,0 +1,1 @@
+ALTER TABLE tb_lembaga DROP COLUMN kode_lembaga;
