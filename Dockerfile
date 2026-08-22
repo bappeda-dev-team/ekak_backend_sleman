@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.24.2
+ARG GO_VERSION=1.25.5
 
 FROM registry.docker.com/library/golang:$GO_VERSION-alpine as base
 

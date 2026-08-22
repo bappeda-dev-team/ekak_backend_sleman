@@ -1,6 +1,6 @@
 module ekak_kab_sleman
 
-go 1.24.2
+go 1.25.5
 
 require (
 	github.com/go-playground/validator/v10 v10.22.1
