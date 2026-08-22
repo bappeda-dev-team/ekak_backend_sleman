@@ -11,17 +11,17 @@ import (
 )
 
 type StrategicArahKebijakanPemdaServiceImpl struct {
-	csfRepository             repository.CSFRepository
-	DB                        *sql.DB
-	tujuanPemdaRepository     repository.TujuanPemdaRepository
-	sasaranPemdaRepository    repository.SasaranPemdaRepository
+	csfRepository          repository.CSFRepository
+	DB                     *sql.DB
+	tujuanPemdaRepository  repository.TujuanPemdaRepository
+	sasaranPemdaRepository repository.SasaranPemdaRepository
 }
 
 func NewStrategicArahKebijakanPemdaServiceImpl(csfRepository repository.CSFRepository, DB *sql.DB, tujuanPemdaRepository repository.TujuanPemdaRepository, sasaranPemdaRepository repository.SasaranPemdaRepository) *StrategicArahKebijakanPemdaServiceImpl {
 	return &StrategicArahKebijakanPemdaServiceImpl{
-		DB:                        DB,
-		csfRepository:             csfRepository,
-		tujuanPemdaRepository: tujuanPemdaRepository,
+		DB:                     DB,
+		csfRepository:          csfRepository,
+		tujuanPemdaRepository:  tujuanPemdaRepository,
 		sasaranPemdaRepository: sasaranPemdaRepository,
 	}
 }
@@ -38,8 +38,8 @@ func (service *StrategicArahKebijakanPemdaServiceImpl) FindAll(ctx context.Conte
 
 	// Inisialisasi response dasar
 	response := strategicarahkebijakan.StrategicArahKebijakanPemdaAllResponse{
-		IsuStrategisPemda: make([]strategicarahkebijakan.IsuStrategiPemdaResponse, 0),
-		TujuanPemda:  make([]strategicarahkebijakan.TujuanPemdaResponse, 0),
+		IsuStrategisPemda:           make([]strategicarahkebijakan.IsuStrategiPemdaResponse, 0),
+		TujuanPemda:                 make([]strategicarahkebijakan.TujuanPemdaResponse, 0),
 		StrategiArahKebijakanPemdas: make([]strategicarahkebijakan.StrategiArahKebijakanPemdaResponse, 0),
 	}
 
@@ -51,14 +51,13 @@ func (service *StrategicArahKebijakanPemdaServiceImpl) FindAll(ctx context.Conte
 		Responses := make([]strategicarahkebijakan.IsuStrategiPemdaResponse, 0, len(csfList))
 		for _, tujuan := range csfList {
 			Responses = append(Responses, strategicarahkebijakan.IsuStrategiPemdaResponse{
-				NamaIsu:        tujuan.NamaIsu,
+				NamaIsu: tujuan.NamaIsu,
 			})
 		}
 		response.IsuStrategisPemda = Responses
 	} else {
 		response.IsuStrategisPemda = nil
 	}
-	
 
 	// Ambil data tujuan OPD dengan batch
 	tujuanPemdas, err := service.tujuanPemdaRepository.FindAllBetweenTahun(ctx, tx, tahunAwal, tahunAkhir, "RPJMD")
@@ -69,8 +68,8 @@ func (service *StrategicArahKebijakanPemdaServiceImpl) FindAll(ctx context.Conte
 		tujuanResponses := make([]strategicarahkebijakan.TujuanPemdaResponse, 0, len(tujuanPemdas))
 		for _, tujuan := range tujuanPemdas {
 			tujuanResponses = append(tujuanResponses, strategicarahkebijakan.TujuanPemdaResponse{
-				Id:        tujuan.Id,
-				Tujuan:    tujuan.TujuanPemda,
+				Id:     tujuan.Id,
+				Tujuan: tujuan.TujuanPemda,
 			})
 		}
 		response.TujuanPemda = tujuanResponses
@@ -116,11 +115,8 @@ func (service *StrategicArahKebijakanPemdaServiceImpl) FindAll(ctx context.Conte
 		response.StrategiArahKebijakanPemdas = strategiResponses
 	}
 
-
-
 	log.Printf("[%s] [END] [%s] totalResponseTime=%v, strategicsCount=%d",
 		time.Now().Format("2006-01-02 15:04:05.000"), serviceName, time.Since(startTime), len(response.TujuanPemda))
 
 	return response, nil
 }
-

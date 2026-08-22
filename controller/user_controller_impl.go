@@ -189,7 +189,7 @@ func (controller *UserControllerImpl) Login(writer http.ResponseWriter, request 
 	webResponse := web.WebResponse{
 		Code:   http.StatusOK,
 		Status: "OK",
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"token": loginResponse.Token,
 		},
 	}
@@ -260,6 +260,101 @@ func (controller *UserControllerImpl) CekAdminOpd(writer http.ResponseWriter, re
 		Code:   200,
 		Status: "success cek admin opd",
 		Data:   response,
+	}
+
+	helper.WriteToResponseBody(writer, webResponse)
+}
+
+func (controller *UserControllerImpl) GetCaptcha(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	captchaResponse, err := controller.userService.GetCaptcha(request.Context())
+	if err != nil {
+		webResponse := web.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "failed get captcha",
+			Data:   err.Error(),
+		}
+		helper.WriteToResponseBody(writer, webResponse)
+		return
+	}
+
+	webResponse := web.WebResponse{
+		Code:   http.StatusOK,
+		Status: "success get captcha",
+		Data:   captchaResponse,
+	}
+
+	helper.WriteToResponseBody(writer, webResponse)
+}
+
+func (controller *UserControllerImpl) UserInfo(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	query := request.URL.Query()
+	userId := query.Get("userId")
+	id, err := strconv.Atoi(userId)
+	if err != nil {
+		webResponse := web.WebResponse{
+			Code:   400,
+			Status: "failed find by id user",
+			Data:   "invalid user id",
+		}
+		helper.WriteToResponseBody(writer, webResponse)
+		return
+	}
+
+	userResponse, err := controller.userService.UserInfo(request.Context(), id)
+	if err != nil {
+		webResponse := web.WebResponse{
+			Code:   400,
+			Status: "failed find by id user",
+			Data:   err.Error(),
+		}
+		helper.WriteToResponseBody(writer, webResponse)
+		return
+	}
+
+	webResponse := web.WebResponse{
+		Code:   200,
+		Status: "success find by id user",
+		Data:   userResponse,
+	}
+
+	helper.WriteToResponseBody(writer, webResponse)
+}
+
+func (controller *UserControllerImpl) UpdatePassword(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	// cek user dulu
+	// ===============================
+	// 1. Ambil User dari JWT Claims
+	// ===============================
+	claims := helper.GetUserInfo(request.Context())
+	if claims.UserId == 0 {
+		helper.WriteToResponseBody(writer, web.WebResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "UNAUTHORIZED",
+			Data:   "Token invalid",
+		})
+		return
+	}
+
+	userUpdatePasswordRequest := user.UserUpdatePasswordRequest{}
+	helper.ReadFromRequestBody(request, &userUpdatePasswordRequest)
+
+	userUpdatePasswordRequest.Id = claims.UserId
+
+	userResponse, err := controller.userService.UpdatePassword(request.Context(), userUpdatePasswordRequest)
+	if err != nil {
+		webResponse := web.WebResponse{
+			Code:   400,
+			Status: "BAD REQUEST",
+			Data:   err.Error(),
+		}
+		helper.WriteToResponseBody(writer, webResponse)
+		return
+	}
+
+	webResponse := web.WebResponse{
+		Code:   200,
+		Status: "SUCCESS",
+		Data:   userResponse,
 	}
 
 	helper.WriteToResponseBody(writer, webResponse)

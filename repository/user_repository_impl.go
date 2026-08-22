@@ -3,17 +3,25 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"ekak_kab_sleman/helper"
 	"ekak_kab_sleman/model/domain"
 	"log"
 	"sort"
+	"sync"
 	"time"
 )
 
 type UserRepositoryImpl struct {
+	loginAttempts sync.Map
 }
 
 func NewUserRepositoryImpl() *UserRepositoryImpl {
-	return &UserRepositoryImpl{}
+	repo := &UserRepositoryImpl{}
+
+	// Background cleaner untuk menghapus login attempts yang sudah expired
+	go repo.cleanupExpiredAttempts()
+
+	return repo
 }
 
 func (repository *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, users domain.Users) (domain.Users, error) {
@@ -73,7 +81,7 @@ func (repository *UserRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx, k
         INNER JOIN tb_pegawai p ON u.nip = p.nip
         WHERE 1=1
     `
-	var params []interface{}
+	var params []any
 
 	if kodeOpd != "" {
 		script += " AND p.kode_opd = ?"
@@ -497,4 +505,202 @@ func (repository *UserRepositoryImpl) CekAdminOpd(ctx context.Context, tx *sql.T
 	}
 
 	return users, nil
+}
+
+// In-memory storage untuk captcha
+var (
+	captchaStore = make(map[string]domain.Captcha)
+	captchaMutex sync.RWMutex
+)
+
+// CreateCaptcha menyimpan captcha baru ke dalam memory
+func (repository *UserRepositoryImpl) CreateCaptcha(ctx context.Context, captcha domain.Captcha) error {
+	captchaMutex.Lock()
+	defer captchaMutex.Unlock()
+
+	captchaStore[captcha.ID] = captcha
+	return nil
+}
+
+// ValidateCaptcha memvalidasi captcha berdasarkan ID dan value
+func (repository *UserRepositoryImpl) ValidateCaptcha(ctx context.Context, captchaID string, captchaValue string) (bool, error) {
+	captchaMutex.RLock()
+	defer captchaMutex.RUnlock()
+
+	captcha, exists := captchaStore[captchaID]
+	if !exists {
+		return false, nil
+	}
+
+	// Cek apakah captcha sudah expired
+	if time.Now().After(captcha.ExpiresAt) {
+		// Hapus captcha yang expired
+		captchaMutex.RUnlock()
+		captchaMutex.Lock()
+		delete(captchaStore, captchaID)
+		captchaMutex.Unlock()
+		captchaMutex.RLock()
+		return false, nil
+	}
+
+	// Validasi value (case-insensitive)
+	return helper.ValidateCaptchaImage(captchaID, captchaValue), nil
+}
+
+// DeleteCaptcha menghapus captcha dari memory
+func (repository *UserRepositoryImpl) DeleteCaptcha(ctx context.Context, captchaID string) error {
+	captchaMutex.Lock()
+	defer captchaMutex.Unlock()
+
+	delete(captchaStore, captchaID)
+	return nil
+}
+
+// CleanupExpiredCaptcha membersihkan captcha yang sudah expired (bisa dipanggil secara berkala)
+func (repository *UserRepositoryImpl) CleanupExpiredCaptcha(ctx context.Context) {
+	captchaMutex.Lock()
+	defer captchaMutex.Unlock()
+
+	now := time.Now()
+	for id, captcha := range captchaStore {
+		if now.After(captcha.ExpiresAt) {
+			delete(captchaStore, id)
+		}
+	}
+}
+
+// RecordFailedLogin mencatat percobaan login yang gagal
+func (repository *UserRepositoryImpl) RecordFailedLogin(ctx context.Context, nip string) error {
+	now := time.Now()
+
+	// Load existing attempt atau buat baru
+	var attempt domain.LoginAttempt
+	if val, ok := repository.loginAttempts.Load(nip); ok {
+		attempt = val.(domain.LoginAttempt)
+	} else {
+		attempt = domain.LoginAttempt{
+			Nip:         nip,
+			FailedCount: 0,
+		}
+	}
+
+	// Increment failed count
+	attempt.FailedCount++
+	attempt.LastAttempt = now
+
+	// Jika sudah 3 kali gagal, lock selama 3 menit
+	if attempt.FailedCount >= 3 {
+		attempt.LockedUntil = now.Add(3 * time.Minute)
+		log.Printf("[RATE LIMIT] NIP %s di-lock sampai %s", nip, attempt.LockedUntil.Format("15:04:05"))
+	}
+
+	// Simpan kembali
+	repository.loginAttempts.Store(nip, attempt)
+
+	return nil
+}
+
+// CheckLoginAttempts mengecek apakah user sedang di-lock
+func (repository *UserRepositoryImpl) CheckLoginAttempts(ctx context.Context, nip string) (isLocked bool, remainingTime int, err error) {
+	val, ok := repository.loginAttempts.Load(nip)
+	if !ok {
+		// Belum ada attempt
+		return false, 0, nil
+	}
+
+	attempt := val.(domain.LoginAttempt)
+	now := time.Now()
+
+	// Cek apakah masih dalam periode lock
+	if attempt.FailedCount >= 3 && now.Before(attempt.LockedUntil) {
+		remainingSeconds := int(attempt.LockedUntil.Sub(now).Seconds())
+		log.Printf("[RATE LIMIT] NIP %s masih di-lock, sisa %d detik", nip, remainingSeconds)
+		return true, remainingSeconds, nil
+	}
+
+	// Jika sudah lewat waktu lock, reset otomatis
+	if attempt.FailedCount >= 3 && now.After(attempt.LockedUntil) {
+		repository.loginAttempts.Delete(nip)
+		log.Printf("[RATE LIMIT] NIP %s lock sudah expired, direset", nip)
+		return false, 0, nil
+	}
+
+	return false, 0, nil
+}
+
+// ResetLoginAttempts mereset percobaan login (dipanggil saat login berhasil)
+func (repository *UserRepositoryImpl) ResetLoginAttempts(ctx context.Context, nip string) error {
+	repository.loginAttempts.Delete(nip)
+	log.Printf("[RATE LIMIT] NIP %s login berhasil, attempt direset", nip)
+	return nil
+}
+
+// cleanupExpiredAttempts membersihkan login attempts yang sudah expired setiap 5 menit
+func (repository *UserRepositoryImpl) cleanupExpiredAttempts() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		now := time.Now()
+		repository.loginAttempts.Range(func(key, value any) bool {
+			attempt := value.(domain.LoginAttempt)
+
+			// Hapus jika sudah lebih dari 10 menit tidak ada aktivitas
+			if now.Sub(attempt.LastAttempt) > 10*time.Minute {
+				repository.loginAttempts.Delete(key)
+				log.Printf("[RATE LIMIT CLEANUP] Menghapus attempt untuk NIP %s", key)
+			}
+
+			return true
+		})
+	}
+}
+
+func (repository *UserRepositoryImpl) FindUserInfo(
+	ctx context.Context,
+	tx *sql.Tx,
+	userId int,
+) (domain.Users, error) {
+	script := `
+	SELECT
+	   u.id,
+	   u.nip,
+	   u.email,
+	   u.is_active,
+	   u.password_updated_at
+	FROM tb_users u
+	WHERE u.id = ?
+	`
+
+	var user domain.Users
+
+	err := tx.QueryRowContext(ctx, script, userId).Scan(
+		&user.Id,
+		&user.Nip,
+		&user.Email,
+		&user.IsActive,
+		&user.PasswordUpdatedAt,
+	)
+	if err != nil {
+		return domain.Users{}, err
+	}
+
+	return user, nil
+}
+
+func (repository *UserRepositoryImpl) UpdatePassword(ctx context.Context, tx *sql.Tx, users domain.Users) (domain.Users, error) {
+	script := `
+        UPDATE tb_users
+        SET password = ?,
+            updated_by = ?,
+            updated_at = NOW(),
+	    password_updated_at = NOW()
+        WHERE id = ?
+    `
+	_, err := tx.ExecContext(ctx, script, users.Password, users.UpdatedBy, users.Id)
+	if err != nil {
+		return users, err
+	}
+
+	return repository.FindById(ctx, tx, users.Id)
 }

@@ -13,8 +13,9 @@ var jwtSecretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 var jwtIssuer = os.Getenv("JWT_ISSUER")
 var jwtExpiration = os.Getenv("JWT_EXPIRATION")
 
-func CreateNewJWT(userId int, pegawaiId string, email string, nip string, kodeOpd string, namaOpd string, namaPegawai string, roles []string) string {
+func CreateNewJWT(data web.JWTClaim) (string, error) {
 	exp := 24 * time.Hour
+
 	if jwtExpiration != "" {
 		if duration, err := time.ParseDuration(jwtExpiration + "h"); err == nil {
 			exp = duration
@@ -23,29 +24,25 @@ func CreateNewJWT(userId int, pegawaiId string, email string, nip string, kodeOp
 
 	claims := jwt.MapClaims{
 		"iss":          jwtIssuer,
-		"user_id":      userId,
-		"pegawai_id":   pegawaiId,
-		"email":        email,
-		"nip":          nip,
-		"kode_opd":     kodeOpd,
-		"nama_opd":     namaOpd,
-		"nama_pegawai": namaPegawai,
-		"roles":        roles,
+		"user_id":      data.UserId,
+		"pegawai_id":   data.PegawaiId,
+		"email":        data.Email,
+		"nip":          data.Nip,
+		"kode_opd":     data.KodeOpd,
+		"nama_opd":     data.NamaOpd,
+		"nama_pegawai": data.NamaPegawai,
+		"roles":        data.Roles,
 		"iat":          time.Now().Unix(),
 		"exp":          time.Now().Add(exp).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(jwtSecretKey)
-	if err != nil {
-		fmt.Println(err)
-	}
 
-	return signedToken
+	return token.SignedString(jwtSecretKey)
 }
 
 func ValidateJWT(tokenString string) web.JWTClaim {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}

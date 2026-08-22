@@ -22,7 +22,7 @@ func BuildTematikResponse(pohonMap map[int]map[int][]domain.PohonKinerja, temati
 		TaggingPokin: ConvertToTaggingResponses(tematik.TaggingPokin), // Tambahkan tagging
 	}
 
-	var childs []interface{}
+	var childs []any
 
 	// Tambahkan strategic (level 4) yang memiliki parent level 0
 	if strategics := pohonMap[4][tematik.Id]; len(strategics) > 0 {
@@ -58,7 +58,7 @@ func BuildSubTematikResponse(pohonMap map[int]map[int][]domain.PohonKinerja, sub
 		TaggingPokin: ConvertToTaggingResponses(subTematik.TaggingPokin),
 	}
 
-	var childs []interface{}
+	var childs []any
 
 	// Tambahkan strategic (level 4) yang memiliki parent level 1
 	if strategics := pohonMap[4][subTematik.Id]; len(strategics) > 0 {
@@ -94,7 +94,7 @@ func BuildSubSubTematikResponse(pohonMap map[int]map[int][]domain.PohonKinerja, 
 		TaggingPokin: ConvertToTaggingResponses(subSubTematik.TaggingPokin),
 	}
 
-	var childs []interface{}
+	var childs []any
 
 	// Tambahkan strategic (level 4) yang memiliki parent level 2
 	if strategics := pohonMap[4][subSubTematik.Id]; len(strategics) > 0 {
@@ -130,7 +130,7 @@ func BuildSuperSubTematikResponse(pohonMap map[int]map[int][]domain.PohonKinerja
 		TaggingPokin: ConvertToTaggingResponses(superSubTematik.TaggingPokin),
 	}
 
-	var childs []interface{}
+	var childs []any
 
 	// Tambahkan strategic (level 4) yang memiliki parent level 3
 	if strategics := pohonMap[4][superSubTematik.Id]; len(strategics) > 0 {
@@ -223,7 +223,7 @@ func BuildStrategicResponse(pohonMap map[int]map[int][]domain.PohonKinerja, stra
 		TaggingPokin: taggingResponses,
 	}
 
-	var childs []interface{}
+	var childs []any
 
 	// Tambahkan tactical (level 5) ke childs
 	if tacticals := pohonMap[5][strategic.Id]; len(tacticals) > 0 {
@@ -301,7 +301,7 @@ func BuildTacticalResponse(pohonMap map[int]map[int][]domain.PohonKinerja, tacti
 		}
 	}
 
-	var childs []interface{}
+	var childs []any
 
 	// Tambahkan operational ke childs
 	if operationals := pohonMap[6][tactical.Id]; len(operationals) > 0 {
@@ -374,7 +374,7 @@ func BuildOperationalResponse(pohonMap map[int]map[int][]domain.PohonKinerja, op
 		}
 	}
 
-	var childs []interface{}
+	var childs []any
 
 	// Cek level berikutnya (operational-n)
 	nextLevel := operational.LevelPohon + 1
@@ -485,7 +485,7 @@ func BuildSubTematikResponseLimited(pohonMap map[int]map[int][]domain.PohonKiner
 		Indikators:  ConvertToIndikatorResponses(subTematik.Indikator),
 	}
 
-	var childs []interface{}
+	var childs []any
 
 	// Hanya tambahkan strategic (level 4) yang memiliki parent level 1
 	if strategics := pohonMap[4][subTematik.Id]; len(strategics) > 0 {

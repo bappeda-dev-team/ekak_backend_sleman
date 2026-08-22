@@ -16,4 +16,7 @@ type UserController interface {
 	FindByKodeOpdAndRole(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
 	FindByNip(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
 	CekAdminOpd(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
+	GetCaptcha(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
+	UserInfo(w http.ResponseWriter, r *http.Request, params httprouter.Params)
+	UpdatePassword(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 }

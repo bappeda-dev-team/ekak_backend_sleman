@@ -12,3 +12,8 @@ type UserUpdateRequest struct {
 type UserRoleUpdateRequest struct {
 	RoleId int `json:"role_id"`
 }
+
+type UserUpdatePasswordRequest struct {
+	Id       int    `json:"id"`
+	Password string `json:"password"`
+}

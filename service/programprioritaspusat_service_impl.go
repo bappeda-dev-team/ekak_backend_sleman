@@ -17,15 +17,15 @@ import (
 
 type ProgramPrioritasPusatServiceImpl struct {
 	ProgramPrioritasPusatRepository repository.ProgramPrioritasPusatRepository
-	DB                        *sql.DB
-	Validate                  *validator.Validate
+	DB                              *sql.DB
+	Validate                        *validator.Validate
 }
 
 func NewProgramPrioritasPusatServiceImpl(programPrioritasPusatRepository repository.ProgramPrioritasPusatRepository, db *sql.DB, validate *validator.Validate) *ProgramPrioritasPusatServiceImpl {
 	return &ProgramPrioritasPusatServiceImpl{
 		ProgramPrioritasPusatRepository: programPrioritasPusatRepository,
-		DB:                        db,
-		Validate:                  validate,
+		DB:                              db,
+		Validate:                        validate,
 	}
 }
 
@@ -44,12 +44,12 @@ func (service *ProgramPrioritasPusatServiceImpl) Create(ctx context.Context, req
 	kodeProgram := fmt.Sprintf("PRG-UNG-%s", uuid.New().String()[:6])
 
 	programPrioritasPusat := domain.ProgramPrioritasPusat{
-		NamaTagging:               request.NamaTagging,
+		NamaTagging:                     request.NamaTagging,
 		KodeProgramPrioritasPusat:       kodeProgram,
 		KeteranganProgramPrioritasPusat: &request.KeteranganProgramPrioritasPusat,
-		Keterangan:                &request.Keterangan,
-		TahunAwal:                 request.TahunAwal,
-		TahunAkhir:                request.TahunAkhir,
+		Keterangan:                      &request.Keterangan,
+		TahunAwal:                       request.TahunAwal,
+		TahunAkhir:                      request.TahunAkhir,
 	}
 
 	result, err := service.ProgramPrioritasPusatRepository.Create(ctx, tx, programPrioritasPusat)
@@ -58,13 +58,13 @@ func (service *ProgramPrioritasPusatServiceImpl) Create(ctx context.Context, req
 	}
 
 	return programprioritaspusat.ProgramPrioritasPusatResponse{
-		Id:                        result.Id,
-		NamaTagging:               result.NamaTagging,
+		Id:                              result.Id,
+		NamaTagging:                     result.NamaTagging,
 		KodeProgramPrioritasPusat:       result.KodeProgramPrioritasPusat,
 		KeteranganProgramPrioritasPusat: result.KeteranganProgramPrioritasPusat,
-		Keterangan:                result.Keterangan,
-		TahunAwal:                 result.TahunAwal,
-		TahunAkhir:                result.TahunAkhir,
+		Keterangan:                      result.Keterangan,
+		TahunAwal:                       result.TahunAwal,
+		TahunAkhir:                      result.TahunAkhir,
 	}, nil
 }
 
@@ -87,12 +87,12 @@ func (service *ProgramPrioritasPusatServiceImpl) Update(ctx context.Context, req
 	}
 
 	programPrioritasPusat := domain.ProgramPrioritasPusat{
-		Id:                        request.Id,
-		NamaTagging:               request.NamaTagging,
+		Id:                              request.Id,
+		NamaTagging:                     request.NamaTagging,
 		KeteranganProgramPrioritasPusat: &request.KeteranganProgramPrioritasPusat,
-		Keterangan:                &request.Keterangan,
-		TahunAwal:                 request.TahunAwal,
-		TahunAkhir:                request.TahunAkhir,
+		Keterangan:                      &request.Keterangan,
+		TahunAwal:                       request.TahunAwal,
+		TahunAkhir:                      request.TahunAkhir,
 	}
 
 	result, err := service.ProgramPrioritasPusatRepository.Update(ctx, tx, programPrioritasPusat)
@@ -106,13 +106,13 @@ func (service *ProgramPrioritasPusatServiceImpl) Update(ctx context.Context, req
 	}
 
 	return programprioritaspusat.ProgramPrioritasPusatResponse{
-		Id:                        updateData.Id,
-		NamaTagging:               updateData.NamaTagging,
+		Id:                              updateData.Id,
+		NamaTagging:                     updateData.NamaTagging,
 		KodeProgramPrioritasPusat:       updateData.KodeProgramPrioritasPusat,
 		KeteranganProgramPrioritasPusat: updateData.KeteranganProgramPrioritasPusat,
-		Keterangan:                updateData.Keterangan,
-		TahunAwal:                 updateData.TahunAwal,
-		TahunAkhir:                updateData.TahunAkhir,
+		Keterangan:                      updateData.Keterangan,
+		TahunAwal:                       updateData.TahunAwal,
+		TahunAkhir:                      updateData.TahunAkhir,
 	}, nil
 }
 
@@ -145,13 +145,13 @@ func (service *ProgramPrioritasPusatServiceImpl) FindById(ctx context.Context, i
 	}
 
 	return programprioritaspusat.ProgramPrioritasPusatResponse{
-		Id:                        result.Id,
-		NamaTagging:               result.NamaTagging,
+		Id:                              result.Id,
+		NamaTagging:                     result.NamaTagging,
 		KodeProgramPrioritasPusat:       result.KodeProgramPrioritasPusat,
 		KeteranganProgramPrioritasPusat: result.KeteranganProgramPrioritasPusat,
-		Keterangan:                result.Keterangan,
-		TahunAwal:                 result.TahunAwal,
-		TahunAkhir:                result.TahunAkhir,
+		Keterangan:                      result.Keterangan,
+		TahunAwal:                       result.TahunAwal,
+		TahunAkhir:                      result.TahunAkhir,
 	}, nil
 }
 
@@ -170,14 +170,14 @@ func (service *ProgramPrioritasPusatServiceImpl) FindAll(ctx context.Context, ta
 	var responses []programprioritaspusat.ProgramPrioritasPusatResponse
 	for _, result := range results {
 		responses = append(responses, programprioritaspusat.ProgramPrioritasPusatResponse{
-			Id:                        result.Id,
-			NamaTagging:               result.NamaTagging,
+			Id:                              result.Id,
+			NamaTagging:                     result.NamaTagging,
 			KodeProgramPrioritasPusat:       result.KodeProgramPrioritasPusat,
 			KeteranganProgramPrioritasPusat: result.KeteranganProgramPrioritasPusat,
-			Keterangan:                result.Keterangan,
-			TahunAwal:                 result.TahunAwal,
-			TahunAkhir:                result.TahunAkhir,
-			IsActive:                  result.IsActive,
+			Keterangan:                      result.Keterangan,
+			TahunAwal:                       result.TahunAwal,
+			TahunAkhir:                      result.TahunAkhir,
+			IsActive:                        result.IsActive,
 		})
 	}
 
@@ -197,13 +197,13 @@ func (service *ProgramPrioritasPusatServiceImpl) FindByKodeProgramPrioritasPusat
 	}
 
 	return programprioritaspusat.ProgramPrioritasPusatResponse{
-		Id:                        result.Id,
-		NamaTagging:               result.NamaTagging,
+		Id:                              result.Id,
+		NamaTagging:                     result.NamaTagging,
 		KodeProgramPrioritasPusat:       result.KodeProgramPrioritasPusat,
 		KeteranganProgramPrioritasPusat: result.KeteranganProgramPrioritasPusat,
-		Keterangan:                result.Keterangan,
-		TahunAwal:                 result.TahunAwal,
-		TahunAkhir:                result.TahunAkhir,
+		Keterangan:                      result.Keterangan,
+		TahunAwal:                       result.TahunAwal,
+		TahunAkhir:                      result.TahunAkhir,
 	}, nil
 }
 
@@ -228,13 +228,13 @@ func (service *ProgramPrioritasPusatServiceImpl) FindByTahun(ctx context.Context
 	var responses []programprioritaspusat.ProgramPrioritasPusatResponse
 	for _, result := range results {
 		responses = append(responses, programprioritaspusat.ProgramPrioritasPusatResponse{
-			Id:                        result.Id,
-			NamaTagging:               result.NamaTagging,
+			Id:                              result.Id,
+			NamaTagging:                     result.NamaTagging,
 			KodeProgramPrioritasPusat:       result.KodeProgramPrioritasPusat,
 			KeteranganProgramPrioritasPusat: result.KeteranganProgramPrioritasPusat,
-			Keterangan:                result.Keterangan,
-			TahunAwal:                 result.TahunAwal,
-			TahunAkhir:                result.TahunAkhir,
+			Keterangan:                      result.Keterangan,
+			TahunAwal:                       result.TahunAwal,
+			TahunAkhir:                      result.TahunAkhir,
 		})
 	}
 
@@ -262,13 +262,13 @@ func (service *ProgramPrioritasPusatServiceImpl) FindUnusedByTahun(ctx context.C
 	var responses []programprioritaspusat.ProgramPrioritasPusatResponse
 	for _, result := range results {
 		responses = append(responses, programprioritaspusat.ProgramPrioritasPusatResponse{
-			Id:                        result.Id,
-			NamaTagging:               result.NamaTagging,
+			Id:                              result.Id,
+			NamaTagging:                     result.NamaTagging,
 			KodeProgramPrioritasPusat:       result.KodeProgramPrioritasPusat,
 			KeteranganProgramPrioritasPusat: result.KeteranganProgramPrioritasPusat,
-			Keterangan:                result.Keterangan,
-			TahunAwal:                 result.TahunAwal,
-			TahunAkhir:                result.TahunAkhir,
+			Keterangan:                      result.Keterangan,
+			TahunAwal:                       result.TahunAwal,
+			TahunAkhir:                      result.TahunAkhir,
 		})
 	}
 
@@ -290,13 +290,13 @@ func (service *ProgramPrioritasPusatServiceImpl) FindByIdTerkait(ctx context.Con
 	var responses []programprioritaspusat.ProgramPrioritasPusatResponse
 	for _, result := range results {
 		responses = append(responses, programprioritaspusat.ProgramPrioritasPusatResponse{
-			Id:                        result.Id,
-			NamaTagging:               result.NamaTagging,
+			Id:                              result.Id,
+			NamaTagging:                     result.NamaTagging,
 			KodeProgramPrioritasPusat:       result.KodeProgramPrioritasPusat,
 			KeteranganProgramPrioritasPusat: result.KeteranganProgramPrioritasPusat,
-			Keterangan:                result.Keterangan,
-			TahunAwal:                 result.TahunAwal,
-			TahunAkhir:                result.TahunAkhir,
+			Keterangan:                      result.Keterangan,
+			TahunAwal:                       result.TahunAwal,
+			TahunAkhir:                      result.TahunAkhir,
 		})
 	}
 

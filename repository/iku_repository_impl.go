@@ -113,24 +113,24 @@ func (repository *IkuRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx, ta
 
 	for rows.Next() {
 		var (
-			indikatorId         sql.NullString
-			indikator           sql.NullString
-			rumusPerhitungan    sql.NullString
-			sumberData          sql.NullString
-			indikatorCreatedAt  sql.NullTime
-			ikuActive           bool
-			targetId            sql.NullString
-			target              sql.NullString
-			satuan              sql.NullString
-			targetTahun         sql.NullString
-			sumber              string
-			parentId            sql.NullInt64
-			parentName          sql.NullString
-			tahunAwal           string
-			tahunAkhir          string
-			jenisPeriodeData    string
-			isActive            bool
-			isExists            bool
+			indikatorId        sql.NullString
+			indikator          sql.NullString
+			rumusPerhitungan   sql.NullString
+			sumberData         sql.NullString
+			indikatorCreatedAt sql.NullTime
+			ikuActive          bool
+			targetId           sql.NullString
+			target             sql.NullString
+			satuan             sql.NullString
+			targetTahun        sql.NullString
+			sumber             string
+			parentId           sql.NullInt64
+			parentName         sql.NullString
+			tahunAwal          string
+			tahunAkhir         string
+			jenisPeriodeData   string
+			isActive           bool
+			isExists           bool
 		)
 
 		err := rows.Scan(
@@ -179,17 +179,17 @@ func (repository *IkuRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx, ta
 			}
 
 			item = &domain.Indikator{
-				Id:                  indikatorId.String,
-				Indikator:           indikator.String,
-				RumusPerhitungan:    rumusPerhitungan,
-				SumberData:          sumberData,
-				CreatedAt:           indikatorCreatedAt.Time,
-				Sumber:              sumber,
-				ParentId:            int(parentId.Int64),
-				ParentName:          parentName.String,
-				Target:              targets,
-				IsActive:            isActive,
-				IkuActive:           ikuActive,
+				Id:               indikatorId.String,
+				Indikator:        indikator.String,
+				RumusPerhitungan: rumusPerhitungan,
+				SumberData:       sumberData,
+				CreatedAt:        indikatorCreatedAt.Time,
+				Sumber:           sumber,
+				ParentId:         int(parentId.Int64),
+				ParentName:       parentName.String,
+				Target:           targets,
+				IsActive:         isActive,
+				IkuActive:        ikuActive,
 			}
 			indikatorMap[indikatorId.String] = item
 		}

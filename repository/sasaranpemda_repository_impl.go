@@ -926,7 +926,6 @@ func (r *SasaranPemdaRepositoryImpl) FindStrategicArahKebijakanPemda(ctx context
 	return results, nil
 }
 
-
 func (repository *SasaranPemdaRepositoryImpl) IsSubtemaIdExists(ctx context.Context, tx *sql.Tx, subtemaId int) bool {
 	query := "SELECT COUNT(*) FROM tb_sasaran_pemda WHERE subtema_id = ?"
 	var count int

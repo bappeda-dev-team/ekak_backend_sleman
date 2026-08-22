@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"ekak_kab_sleman/helper"
 	"ekak_kab_sleman/model/domain"
+	"ekak_kab_sleman/model/web"
 	"ekak_kab_sleman/model/web/user"
 	"ekak_kab_sleman/repository"
 	"errors"
+	"fmt"
 	"sort"
 
 	"golang.org/x/crypto/bcrypt"
@@ -405,6 +407,49 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user.UserLogi
 	if request.Password == "" {
 		return user.UserLoginResponse{}, errors.New("password harus diisi")
 	}
+	if request.CaptchaID == "" {
+		return user.UserLoginResponse{}, errors.New("captcha_id harus diisi")
+	}
+	if request.CaptchaValue == "" {
+		return user.UserLoginResponse{}, errors.New("captcha_value harus diisi")
+	}
+
+	// CEK RATE LIMIT (SEBELUM VALIDASI CAPTCHA)
+	isLocked, remainingTime, err := service.UserRepository.CheckLoginAttempts(ctx, request.Username)
+	if err != nil {
+		return user.UserLoginResponse{}, err
+	}
+
+	if isLocked {
+		minutes := remainingTime / 60
+		seconds := remainingTime % 60
+
+		return user.UserLoginResponse{
+			IsLocked:        true,
+			RemainingTime:   remainingTime,
+			RemainingMinute: minutes,
+			RemainingSecond: seconds,
+			Message:         fmt.Sprintf("Akun dikunci karena terlalu banyak percobaan login gagal. Silakan coba lagi dalam %d menit %d detik", minutes, seconds),
+		}, fmt.Errorf("akun dikunci, sisa waktu: %d menit %d detik", minutes, seconds)
+	}
+
+	// VALIDASI CAPTCHA (PRIORITAS TINGGI)
+	isValidCaptcha, err := service.UserRepository.ValidateCaptcha(ctx, request.CaptchaID, request.CaptchaValue)
+	if err != nil {
+		return user.UserLoginResponse{}, errors.New("error validasi captcha: " + err.Error())
+	}
+	if !isValidCaptcha {
+		service.UserRepository.DeleteCaptcha(ctx, request.CaptchaID)
+		return user.UserLoginResponse{}, errors.New("captcha tidak valid atau sudah expired, silakan refresh captcha")
+	}
+
+	// ============================================
+	// STEP 3: HAPUS CAPTCHA SETELAH VALID (ONE-TIME USE)
+	// ============================================
+	err = service.UserRepository.DeleteCaptcha(ctx, request.CaptchaID)
+	if err != nil {
+		// Log error tapi lanjutkan proses login
+	}
 
 	// Validasi format NIP
 	// if !helper.IsValidNIP(request.Username) {
@@ -449,16 +494,19 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user.UserLogi
 		roleNames = append(roleNames, role.Role)
 	}
 
-	token := helper.CreateNewJWT(
-		userDomain.Id,
-		pegawaiDomain.Id,
-		userDomain.Email,
-		userDomain.Nip,
-		pegawaiDomain.KodeOpd,
-		opdDomain.NamaOpd,
-		pegawaiDomain.NamaPegawai,
-		roleNames,
-	)
+	token, err := helper.CreateNewJWT(web.JWTClaim{
+		UserId:      userDomain.Id,
+		PegawaiId:   pegawaiDomain.Id,
+		Email:       userDomain.Email,
+		Nip:         userDomain.Nip,
+		NamaPegawai: pegawaiDomain.NamaPegawai,
+		KodeOpd:     pegawaiDomain.KodeOpd,
+		NamaOpd:     opdDomain.NamaOpd,
+		Roles:       roleNames,
+	})
+	if err != nil {
+		return user.UserLoginResponse{}, err
+	}
 
 	response := user.UserLoginResponse{
 		Token: token,
@@ -593,6 +641,130 @@ func (service *UserServiceImpl) CekAdminOpd(ctx context.Context) ([]user.CekAdmi
 		}
 
 		response = append(response, opdResponse)
+	}
+
+	return response, nil
+}
+
+func (service *UserServiceImpl) GetCaptcha(ctx context.Context) (user.CaptchaResponse, error) {
+	// Generate captcha image (menggunakan library dchest/captcha)
+	captchaID, captchaImageBase64, captchaValue := helper.GenerateCaptchaImage()
+
+	if captchaID == "" {
+		return user.CaptchaResponse{}, errors.New("gagal generate captcha")
+	}
+
+	// Buat domain captcha untuk disimpan
+	captchaDomain := domain.Captcha{
+		ID:        captchaID,
+		Value:     captchaValue,
+		ExpiresAt: helper.GetCaptchaExpirationTime(),
+	}
+
+	// Simpan ke repository (in-memory)
+	err := service.UserRepository.CreateCaptcha(ctx, captchaDomain)
+	if err != nil {
+		return user.CaptchaResponse{}, err
+	}
+
+	// Return response dengan image base64
+	response := user.CaptchaResponse{
+		CaptchaID:    captchaID,
+		CaptchaImage: "data:image/png;base64," + captchaImageBase64, // Format data URI untuk langsung ditampilkan di HTML
+		// CaptchaValue: captchaValue, // Hapus di production, hanya untuk testing
+	}
+
+	return response, nil
+}
+
+func (service *UserServiceImpl) UserInfo(ctx context.Context, userId int) (user.UserInfoResponse, error) {
+	tx, err := service.DB.Begin()
+	if err != nil {
+		return user.UserInfoResponse{}, err
+	}
+	defer helper.CommitOrRollback(tx)
+
+	// Cari user berdasarkan ID
+	userDomain, err := service.UserRepository.FindUserInfo(ctx, tx, userId)
+	if err != nil {
+		return user.UserInfoResponse{}, err
+	}
+
+	// Cek apakah user ditemukan
+	if userDomain.Id == 0 {
+		return user.UserInfoResponse{}, errors.New("user tidak ditemukan")
+	}
+
+	// Convert ke response
+	response := user.UserInfoResponse{
+		Id:                     userDomain.Id,
+		Nip:                    userDomain.Nip,
+		Email:                  userDomain.Email,
+		IsActive:               userDomain.IsActive,
+		PasswordUpdatedAt:      userDomain.PasswordUpdatedAt,
+		PasswordChangeRequired: service.passwordChangeRequired(userDomain),
+	}
+
+	return response, nil
+}
+
+func (service *UserServiceImpl) passwordChangeRequired(user domain.Users) bool {
+	return user.PasswordUpdatedAt == nil
+}
+
+func (service *UserServiceImpl) UpdatePassword(ctx context.Context, request user.UserUpdatePasswordRequest) (user.UserResponse, error) {
+	tx, err := service.DB.Begin()
+	if err != nil {
+		return user.UserResponse{}, err
+	}
+	defer helper.CommitOrRollback(tx)
+
+	// Validasi user exists
+	existingUser, err := service.UserRepository.FindById(ctx, tx, request.Id)
+	if err != nil {
+		return user.UserResponse{}, err
+	}
+	if existingUser.Id == 0 {
+		return user.UserResponse{}, errors.New("user tidak ditemukan")
+	}
+
+	// Validasi input dasar
+	if request.Password == "" {
+		return user.UserResponse{}, errors.New("password harus diisi")
+	}
+
+	if len(request.Password) < 8 {
+		return user.UserResponse{}, errors.New("password kurang kuat")
+	}
+
+	// ambil updater
+	claims := ctx.Value(helper.UserInfoKey).(web.JWTClaim)
+
+	userDomain := domain.Users{
+		Id:        existingUser.Id,
+		UpdatedBy: claims.UserId,
+	}
+
+	// Handle password update
+	if request.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return user.UserResponse{}, err
+		}
+		userDomain.Password = string(hashedPassword)
+	} else {
+		userDomain.Password = existingUser.Password
+	}
+
+	updatedUser, err := service.UserRepository.UpdatePassword(ctx, tx, userDomain)
+	if err != nil {
+		return user.UserResponse{}, err
+	}
+
+	response := user.UserResponse{
+		Id:    updatedUser.Id,
+		Nip:   updatedUser.Nip,
+		Email: updatedUser.Email,
 	}
 
 	return response, nil

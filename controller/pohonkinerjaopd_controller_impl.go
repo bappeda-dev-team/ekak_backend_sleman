@@ -264,6 +264,7 @@ func (controller *PohonKinerjaOpdControllerImpl) FindAllArah(writer http.Respons
 	}
 	helper.WriteToResponseBody(writer, webResponse)
 }
+
 // func (controller *PohonKinerjaOpdControllerImpl) FindAllArahPemda(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 // 	kodeOpd := params.ByName("kode_opd")
 // 	tahun := params.ByName("tahun")

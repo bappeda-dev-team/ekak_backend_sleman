@@ -191,12 +191,12 @@ func (repository *CSFRepositoryImpl) IsuFindByTahun(ctx context.Context, tx *sql
 
 	for rows.Next() {
 		var (
-			csfID       int
-			namaPohon   sql.NullString
+			csfID     int
+			namaPohon sql.NullString
 		)
 
 		if err := rows.Scan(
-			&csfID, &namaPohon, 
+			&csfID, &namaPohon,
 		); err != nil {
 			return nil, err
 		}
@@ -204,8 +204,8 @@ func (repository *CSFRepositoryImpl) IsuFindByTahun(ctx context.Context, tx *sql
 		csf, ok := csfMap[csfID]
 		if !ok {
 			csf = &strategic.IsuStrategiOpd{
-				ID:                         csfID,
-				NamaIsu:                   namaPohon.String,
+				ID:      csfID,
+				NamaIsu: namaPohon.String,
 			}
 			csfMap[csfID] = csf
 		}
@@ -257,12 +257,12 @@ func (repository *CSFRepositoryImpl) IsuFindBetweenTahun(ctx context.Context, tx
 
 	for rows.Next() {
 		var (
-			csfID       int
-			namaPohon   sql.NullString
+			csfID     int
+			namaPohon sql.NullString
 		)
 
 		if err := rows.Scan(
-			&csfID, &namaPohon, 
+			&csfID, &namaPohon,
 		); err != nil {
 			return nil, err
 		}
@@ -270,8 +270,8 @@ func (repository *CSFRepositoryImpl) IsuFindBetweenTahun(ctx context.Context, tx
 		csf, ok := csfMap[csfID]
 		if !ok {
 			csf = &strategicarahkebijakan.IsuStrategiPemda{
-				ID:                         csfID,
-				NamaIsu:                   namaPohon.String,
+				ID:      csfID,
+				NamaIsu: namaPohon.String,
 			}
 			csfMap[csfID] = csf
 		}
