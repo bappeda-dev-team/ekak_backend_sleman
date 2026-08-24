@@ -37,4 +37,4 @@ jobs:
         run: make build
 
       - name: Build Docker image
-        run: make docker-build
+        run: make build-image
