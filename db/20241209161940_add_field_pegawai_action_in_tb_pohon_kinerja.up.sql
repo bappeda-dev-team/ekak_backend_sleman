@@ -1,0 +1,1 @@
+ALTER TABLE tb_pohon_kinerja ADD COLUMN pegawai_action JSON;

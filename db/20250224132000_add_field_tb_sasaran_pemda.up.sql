@@ -1,0 +1,4 @@
+ALTER TABLE tb_sasaran_pemda 
+ADD COLUMN tahun_awal VARCHAR(255) NOT NULL,
+ADD COLUMN tahun_akhir VARCHAR(255) NOT NULL,
+ADD COLUMN jenis_periode VARCHAR(255) NOT NULL;

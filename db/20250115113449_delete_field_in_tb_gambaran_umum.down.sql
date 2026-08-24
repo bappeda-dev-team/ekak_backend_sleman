@@ -1,0 +1,1 @@
+ALTER TABLE tb_gambaran_umum ADD COLUMN pegawai_id VARCHAR(255);

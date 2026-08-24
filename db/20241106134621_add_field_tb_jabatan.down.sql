@@ -1,0 +1,1 @@
+ALTER TABLE tb_jabatan DROP COLUMN kode_jabatan;

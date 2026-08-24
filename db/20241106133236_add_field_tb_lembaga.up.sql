@@ -1,0 +1,1 @@
+ALTER TABLE tb_lembaga ADD COLUMN kode_lembaga VARCHAR(255) NOT NULL;

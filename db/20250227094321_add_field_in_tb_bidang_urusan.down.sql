@@ -1,0 +1,1 @@
+ALTER TABLE tb_bidang_urusan DROP COLUMN tahun;

@@ -1,0 +1,22 @@
+CREATE TABLE tb_manual_ik (
+    id INT ,
+    indikator_id VARCHAR(255) UNIQUE,
+    perspektif VARCHAR(255),
+    tujuan_rekin TEXT, 
+    definisi TEXT,
+    key_activities TEXT,
+    formula TEXT,
+    jenis_indikator VARCHAR(50),
+    kinerja TINYINT(1) DEFAULT 0,
+    penduduk TINYINT(1) DEFAULT 0,
+    spasial TINYINT(1) DEFAULT 0,
+    unit_penanggung_jawab TEXT,
+    unit_penyedia_data TEXT,
+    sumber_data TEXT,
+    jangka_waktu_awal VARCHAR(255),
+    jangka_waktu_akhir VARCHAR(255),
+    periode_pelaporan VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;

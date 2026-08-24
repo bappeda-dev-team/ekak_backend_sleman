@@ -1,0 +1,1 @@
+ALTER TABLE tb_periode DROP COLUMN jenis_periode;

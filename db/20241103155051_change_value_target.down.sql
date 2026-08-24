@@ -1,0 +1,2 @@
+ALTER TABLE tb_target
+MODIFY COLUMN target INT

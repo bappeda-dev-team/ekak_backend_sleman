@@ -1,0 +1,1 @@
+ALTER TABLE tb_indikator DROP COLUMN tujuan_pemda_id;

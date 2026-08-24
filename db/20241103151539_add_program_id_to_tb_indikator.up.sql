@@ -1,0 +1,1 @@
+ALTER TABLE tb_indikator ADD COLUMN program_id VARCHAR(255);

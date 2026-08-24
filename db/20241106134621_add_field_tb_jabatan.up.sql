@@ -1,0 +1,1 @@
+ALTER TABLE tb_jabatan ADD COLUMN kode_jabatan VARCHAR(255);

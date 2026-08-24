@@ -1,0 +1,10 @@
+CREATE TABLE tb_pagu (
+    id VARCHAR(225) NOT NULL,
+    subkegiatan_id VARCHAR(225),
+    jenis_pagu VARCHAR(225),
+    tahun VARCHAR(225),
+    pagu INT,
+    pegawai_id VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)ENGINE = InnoDB;
