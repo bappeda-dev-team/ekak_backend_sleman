@@ -49,6 +49,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	helper.InitCaptcha()
 	// Cek flag seeder
 	if *runSeeder {
 		log.Println("Menjalankan database seeder...")

@@ -10,6 +10,7 @@ import (
 	"ekak_kab_sleman/repository"
 	"errors"
 	"fmt"
+	"log"
 	"sort"
 
 	"golang.org/x/crypto/bcrypt"
@@ -482,7 +483,25 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user.UserLogi
 
 	err = bcrypt.CompareHashAndPassword([]byte(userDomain.Password), []byte(request.Password))
 	if err != nil {
-		return user.UserLoginResponse{}, errors.New("nip atau password salah")
+		recordErr := service.UserRepository.RecordFailedLogin(
+			ctx,
+			request.Username,
+		)
+
+		if recordErr != nil {
+			log.Printf("ERROR RECORD FAILED LOGIN")
+			// log saja, jangan expose error internal
+		}
+
+		return service.loginFailedResponse(ctx, request.Username)
+	}
+	// login berhasil (password match)
+	err = service.UserRepository.ResetLoginAttempts(
+		ctx,
+		request.Username,
+	)
+	if err != nil {
+		return user.UserLoginResponse{}, err
 	}
 
 	if !userDomain.IsActive {
@@ -768,4 +787,30 @@ func (service *UserServiceImpl) UpdatePassword(ctx context.Context, request user
 	}
 
 	return response, nil
+}
+
+func (service *UserServiceImpl) loginFailedResponse(
+	ctx context.Context,
+	username string,
+) (user.UserLoginResponse, error) {
+
+	isLocked, remainingTime, err :=
+		service.UserRepository.CheckLoginAttempts(ctx, username)
+
+	if err != nil {
+		return user.UserLoginResponse{}, err
+	}
+
+	minutes := remainingTime / 60
+	seconds := remainingTime % 60
+
+	response := user.UserLoginResponse{
+		IsLocked:        isLocked,
+		RemainingTime:   remainingTime,
+		RemainingMinute: minutes,
+		RemainingSecond: seconds,
+		Message:         "NIP atau password salah",
+	}
+
+	return response, errors.New("nip atau password salah")
 }

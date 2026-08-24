@@ -171,17 +171,26 @@ func (controller *UserControllerImpl) FindById(writer http.ResponseWriter, reque
 // @Success      200      {object}  web.WebResponse        "Berhasil Login"
 // @Failure      400      {object}  web.WebResponse        "Input tidak valid atau Login Gagal"
 // @Router       /user/login [post]
-func (controller *UserControllerImpl) Login(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (controller *UserControllerImpl) Login(
+	writer http.ResponseWriter,
+	request *http.Request,
+	params httprouter.Params,
+) {
 	loginRequest := user.UserLoginRequest{}
 	helper.ReadFromRequestBody(request, &loginRequest)
 
-	loginResponse, err := controller.userService.Login(request.Context(), loginRequest)
+	loginResponse, err := controller.userService.Login(
+		request.Context(),
+		loginRequest,
+	)
+
 	if err != nil {
 		webResponse := web.WebResponse{
-			Code:   http.StatusBadRequest,
-			Status: "BAD REQUEST",
-			Data:   err.Error(),
+			Code:   http.StatusUnauthorized,
+			Status: "UNAUTHORIZED",
+			Data:   loginResponse,
 		}
+
 		helper.WriteToResponseBody(writer, webResponse)
 		return
 	}
@@ -189,9 +198,7 @@ func (controller *UserControllerImpl) Login(writer http.ResponseWriter, request 
 	webResponse := web.WebResponse{
 		Code:   http.StatusOK,
 		Status: "OK",
-		Data: map[string]any{
-			"token": loginResponse.Token,
-		},
+		Data:   loginResponse,
 	}
 
 	helper.WriteToResponseBody(writer, webResponse)
