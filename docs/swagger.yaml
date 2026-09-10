@@ -1471,6 +1471,10 @@ definitions:
     type: object
   user.UserLoginRequest:
     properties:
+      captcha_answer:
+        type: string
+      captcha_key:
+        type: string
       password:
         type: string
       username:

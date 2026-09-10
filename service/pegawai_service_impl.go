@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"ekak_kab_sleman/helper"
+	"ekak_kab_sleman/internal"
 	"ekak_kab_sleman/model/domain/domainmaster"
 	"ekak_kab_sleman/model/web/pegawai"
 	"ekak_kab_sleman/repository"
@@ -19,18 +20,22 @@ type PegawaiServiceImpl struct {
 	opdRepository            repository.OpdRepository
 	jabatanPegawaiRepository repository.JabatanPegawaiRepository
 	DB                       *sql.DB
+	dataMasterClient         internal.DataMasterClient
 }
 
 func NewPegawaiServiceImpl(
 	pegawaiRepository repository.PegawaiRepository,
 	opdRepository repository.OpdRepository,
 	jabatanPegawaiRepository repository.JabatanPegawaiRepository,
-	DB *sql.DB) *PegawaiServiceImpl {
+	DB *sql.DB,
+	dataMasterClient internal.DataMasterClient,
+) *PegawaiServiceImpl {
 	return &PegawaiServiceImpl{
 		pegawaiRepository:        pegawaiRepository,
 		opdRepository:            opdRepository,
 		jabatanPegawaiRepository: jabatanPegawaiRepository,
 		DB:                       DB,
+		dataMasterClient:         dataMasterClient,
 	}
 }
 
@@ -238,4 +243,52 @@ func (service *PegawaiServiceImpl) TambahJabatan(
 	}
 
 	return service.FindPegawaiWithJabatan(ctx, tx, request.Nip)
+}
+
+func (service *PegawaiServiceImpl) FindFromDataMaster(
+	ctx context.Context,
+	kodeOpd string,
+) ([]pegawai.PegawaiResponse, error) {
+	mapping, err := service.dataMasterClient.FindMappingOpd(ctx, kodeOpd)
+	if err != nil {
+		return []pegawai.PegawaiResponse{}, err
+	}
+
+	pegawais, err := service.dataMasterClient.FindPegawaiByKodeOpd(
+		ctx,
+		mapping.KodeMaster,
+	)
+	if err != nil {
+		return []pegawai.PegawaiResponse{}, err
+	}
+
+	return ToPegawaiResponsesFromDataMaster(pegawais, kodeOpd), nil
+}
+
+func ToPegawaiResponsesFromDataMaster(
+	pegawais []internal.Pegawai,
+	kodeOpd string,
+) []pegawai.PegawaiResponse {
+	responses := make([]pegawai.PegawaiResponse, 0, len(pegawais))
+
+	for _, item := range pegawais {
+		responses = append(responses, pegawai.PegawaiResponse{
+			Id:          strconv.FormatUint(item.ID, 10),
+			NamaPegawai: item.PegawaiNama,
+			Nip:         item.PegawaiNIP,
+			KodeOpd:     kodeOpd,
+			NamaOpd:     derefString(item.OpdNama),
+			NamaJabatan: derefString(item.PegawaiJabatanTerakhir),
+		})
+	}
+
+	return responses
+}
+
+func derefString(value *string) string {
+	if value == nil {
+		return ""
+	}
+
+	return *value
 }

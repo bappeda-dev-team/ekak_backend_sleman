@@ -10,7 +10,9 @@ import (
 	"ekak_kab_sleman/middleware"
 	"ekak_kab_sleman/repository"
 	"ekak_kab_sleman/service"
+	"ekak_kab_sleman/internal"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
@@ -449,6 +451,42 @@ var lockDataRepository = wire.NewSet(
 	wire.Bind(new(repository.LockDataRepository), new(*repository.LockDataRepositoryImpl)),
 )
 
+var programPrioritasPusatSet = wire.NewSet(
+	repository.NewProgramPrioritasPusatRepositoryImpl,
+	wire.Bind(new(repository.ProgramPrioritasPusatRepository), new(*repository.ProgramPrioritasPusatRepositoryImpl)),
+	service.NewProgramPrioritasPusatServiceImpl,
+	wire.Bind(new(service.ProgramPrioritasPusatService), new(*service.ProgramPrioritasPusatServiceImpl)),
+	controller.NewProgramPrioritasPusatControllerImpl,
+	wire.Bind(new(controller.ProgramPrioritasPusatController), new(*controller.ProgramPrioritasPusatControllerImpl)),
+)
+
+var strategicArahKebijakanPemdaSet = wire.NewSet(
+	// repository.NewCSFRepositoryImpl,
+	// wire.Bind(new(repository.CSFRepository), new(*repository.CSFRepositoryImpl)),
+	service.NewStrategicArahKebijakanPemdaServiceImpl,
+	wire.Bind(new(service.StrategicArahKebijakanPemdaService), new(*service.StrategicArahKebijakanPemdaServiceImpl)),
+	controller.NewStrategicArahKebijakanPemdaControllerImpl,
+	wire.Bind(new(controller.SrategicArahKebijakanPemdaController), new(*controller.StrategicArahKebijakanPemdaControllerImpl)),
+)
+
+var dataMasterClientSet = wire.NewSet(
+	internal.NewDataMasterClient,
+	wire.Bind(
+		new(internal.DataMasterClient),
+		new(*internal.DataMasterClientImpl),
+	),
+)
+
+func ProvideHTTPClient() *http.Client {
+	return &http.Client{
+		Timeout: 30 * time.Second,
+	}
+}
+
+var httpClientSet = wire.NewSet(
+	ProvideHTTPClient,
+)
+
 func InitializeServer() *http.Server {
 
 	wire.Build(
@@ -505,6 +543,10 @@ func InitializeServer() *http.Server {
 		jabatanPegawaiSet,
 		cloneRecordSet,
 		lockDataRepository,
+		programPrioritasPusatSet,
+		strategicArahKebijakanPemdaSet,
+		dataMasterClientSet,
+		httpClientSet,
 		app.NewRouter,
 		wire.Bind(new(http.Handler), new(*httprouter.Router)),
 		middleware.NewAuthMiddleware,

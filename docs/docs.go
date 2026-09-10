@@ -5737,6 +5737,12 @@ const docTemplate = `{
         "user.UserLoginRequest": {
             "type": "object",
             "properties": {
+                "captcha_answer": {
+                    "type": "string"
+                },
+                "captcha_key": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },
