@@ -7,10 +7,10 @@ import (
 	"ekak_kab_sleman/app"
 	"ekak_kab_sleman/controller"
 	"ekak_kab_sleman/dataseeder"
+	"ekak_kab_sleman/internal"
 	"ekak_kab_sleman/middleware"
 	"ekak_kab_sleman/repository"
 	"ekak_kab_sleman/service"
-	"ekak_kab_sleman/internal"
 	"net/http"
 	"time"
 

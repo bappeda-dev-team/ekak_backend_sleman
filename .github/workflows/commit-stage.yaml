@@ -33,8 +33,5 @@ jobs:
       - name: Run tests
         run: make test
 
-      - name: Check compilation
-        run: make build
-
       - name: Build Docker image
         run: make build-image

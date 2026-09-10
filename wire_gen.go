@@ -14,13 +14,12 @@ import (
 	"ekak_kab_sleman/middleware"
 	"ekak_kab_sleman/repository"
 	"ekak_kab_sleman/service"
-	"github.com/go-playground/validator/v10"
-	"github.com/google/wire"
 	"net/http"
 	"time"
-)
 
-import (
+	"github.com/go-playground/validator/v10"
+	"github.com/google/wire"
+
 	_ "ekak_kab_sleman/docs"
 )
 
