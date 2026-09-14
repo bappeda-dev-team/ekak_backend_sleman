@@ -157,3 +157,29 @@ func (controller *PegawaiControllerImpl) TambahJabatanPegawai(writer http.Respon
 	}
 	helper.WriteToResponseBody(writer, webResponse)
 }
+
+func (controller *PegawaiControllerImpl) FindPegawaiDataMasterOpd(
+	writer http.ResponseWriter,
+	request *http.Request,
+	params httprouter.Params,
+) {
+	kodeOpd := request.URL.Query().Get("kode_opd")
+
+	pegawaiResponses, err := controller.PegawaiService.FindFromDataMaster(request.Context(), kodeOpd)
+	if err != nil {
+		webResponse := web.WebResponse{
+			Code:   500,
+			Status: "Internal Server Error",
+			Data:   err.Error(),
+		}
+		helper.WriteToResponseBody(writer, webResponse)
+		return
+	}
+
+	webResponse := web.WebResponse{
+		Code:   200,
+		Status: "OK",
+		Data:   pegawaiResponses,
+	}
+	helper.WriteToResponseBody(writer, webResponse)
+}

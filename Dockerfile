@@ -1,6 +1,6 @@
 ARG GO_VERSION=1.25.5
 
-FROM registry.docker.com/library/golang:$GO_VERSION-alpine as base
+FROM registry.docker.com/library/golang:$GO_VERSION-alpine AS base
 
 # app lives here
 WORKDIR /app
