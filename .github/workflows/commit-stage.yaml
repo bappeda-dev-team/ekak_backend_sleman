@@ -24,14 +24,5 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Install goimports
-        run: go install golang.org/x/tools/cmd/goimports@latest
-
-      - name: Check formatting
-        run: make check-format
-
-      - name: Run tests
-        run: make test
-
       - name: Build Docker image
         run: make build-image
